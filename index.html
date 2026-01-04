@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的 36 × 10 天全能计划本</title>
+    <!-- Web App Manifest for PWA - 这能让它在手机上像App一样运行 -->
+    <link rel="manifest" href="data:application/manifest+json,{'name':'10天计划','short_name':'10天计划','start_url':'.','display':'standalone','background_color':'#f4f1ee','theme_color':'#2d6a4f'}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Noto+Sans+SC:wght@100;300;500;900&display=swap');
+        
+        :root {
+            --paper-bg: #fdfaf5; 
+            --ink-color: #1a202c;
+            --accent-green: #2d6a4f;
+            --accent-light: #d8f3dc;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f4f1ee;
+            background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px);
+            background-size: 24px 24px; 
+            color: var(--ink-color);
+            min-height: 100vh;
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .notebook-page {
+            background: var(--paper-bg);
+            box-shadow: 0 10px 50px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .glass-motto-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
+        }
+
+        .floating-tag {
+            background: #2d6a4f;
+            color: white;
+            padding: 3px 14px;
+            border-radius: 99px;
+            display: inline-block;
+            box-shadow: 0 8px 15px rgba(45, 106, 79, 0.2);
+            font-weight: 800;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        .title-number {
+            font-size: 10rem;
+            line-height: 0.8;
+            font-weight: 900;
+            background: linear-gradient(180deg, #1a202c 30%, transparent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.08;
+            position: absolute;
+            right: -20px;
+            top: -40px;
+            pointer-events: none;
+        }
+
+        .heatmap-container { display: flex; flex-direction: column; gap: 6px; }
+        .cycle-row { display: flex; gap: 5px; align-items: center; }
+        .heatmap-cell {
+            width: 14px; height: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.02);
+            background-color: #f1f5f9;
+        }
+
+        .journal-entry {
+            background-image: repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px);
+            line-height: 32px;
+            padding-top: 8px;
+            resize: none;
+        }
+
+        .cycle-card {
+            background: #fff;
+            border-radius: 24px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .task-dot {
+            width: 20px; height: 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1.5px solid #edf2f7;
+            background: #fff;
+        }
+        .task-dot.active {
+            background-color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .motto-font { font-family: 'Ma Shan Zheng', cursive; }
+        .handwriting { font-family: 'Zhi Mang Xing', cursive; }
+        .input-minimal { background: transparent; border: none; outline: none; width: 100%; }
+
+        .nav-btn { position: relative; }
+        .nav-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        #save-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 6px 12px;
+            background: rgba(45, 106, 79, 0.9);
+            color: white;
+            border-radius: 99px;
+            font-size: 10px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <div id="save-status">数据已存至本地</div>
+
+    <div id="app" class="max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-16">
+        
+        <!-- 页眉 -->
+        <header class="mb-12 md:mb-20 relative">
+            <div class="flex flex-col md:flex-row items-center gap-12 md:gap-16">
+                <div class="w-full md:w-3/5 relative my-4 md:my-10">
+                    <div class="glass-motto-card p-8 md:p-12 relative overflow-hidden">
+                        <div class="relative z-10 space-y-8 md:space-y-10">
+                            <div class="space-y-2">
+                                <div class="floating-tag uppercase">Personal Offline Journal</div>
+                                <h3 id="motto-display" class="motto-font text-3xl md:text-4xl text-slate-800 leading-[1.6] pt-4">
+                                    拾光漫步，每一个十天都值得。
+                                </h3>
+                            </div>
+                            <div class="flex items-center gap-6 md:gap-10 pt-4">
+                                <div class="flex-1 space-y-4">
+                                    <div class="flex justify-between items-end">
+                                        <span class="text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase">年度进度</span>
+                                        <span id="total-progress-text" class="text-2xl md:text-3xl font-light text-slate-900">0%</span>
+                                    </div>
+                                    <div class="h-1 bg-slate-100 rounded-full overflow-hidden">
+                                        <div id="progress-bar" class="h-full bg-slate-900 transition-all duration-1000" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span id="active-count-num" class="text-4xl md:text-5xl font-black text-slate-900 leading-none">0</span>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase mt-2">已开启阶段</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-2/5 relative py-6 md:py-10">
+                    <div class="title-number">36</div>
+                    <div class="relative z-10 space-y-6">
+                        <div class="space-y-1">
+                            <p class="text-[10px] font-black tracking-[0.5em] text-emerald-800 uppercase pl-1">离线App版</p>
+                            <h1 class="text-6xl md:text-7xl font-black text-slate-900 leading-none tracking-tight">
+                                TEN <span class="text-emerald-700 italic font-light">DAYS</span>
+                            </h1>
+                        </div>
+                        <nav class="flex gap-8 pt-4">
+                            <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn active text-xs font-bold uppercase tracking-widest text-slate-900">年度概览</button>
+                            <button onclick="switchTab('journal')" id="nav-journal" class="nav-btn text-xs font-bold uppercase tracking-widest text-slate-400">十天详情</button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 概览标签页 -->
+        <main id="tab-overview" class="tab-content active space-y-16">
+            <section class="notebook-page p-8 md:p-16 rounded-[40px] md:rounded-[60px]">
+                <div class="flex justify-between items-end mb-12">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-900 motto-font">年度全景矩阵</h2>
+                    </div>
+                    <button onclick="clearAllData()" class="text-[10px] font-bold text-rose-400 uppercase tracking-widest">重置全部数据</button>
+                </div>
+                <div class="heatmap-wrapper" id="heatmap-container"></div>
+            </section>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="planner-grid"></div>
+        </main>
+
+        <!-- 详情标签页 -->
+        <main id="tab-journal" class="tab-content space-y-16">
+            <div id="journal-container" class="space-y-16"></div>
+        </main>
+    </div>
+
+    <script>
+        // --- 数据存储逻辑 ---
+        const STORAGE_KEY = 'my_ten_day_planner_v1';
+        
+        let plannerData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array.from({ length: 36 }, (_, i) => ({
+            id: i + 1,
+            title: '',
+            tasks: [{ name: '', days: Array(10).fill(false) }],
+            notes: { achievements: '', reflection: '', gratitude: '' }
+        }));
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(plannerData));
+            const status = document.getElementById('save-status');
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 1000);
+            updateStats();
+        }
+
+        // --- 渲染页面 ---
+        function renderOverview() {
+            const grid = document.getElementById('planner-grid');
+            const heatmapWrapper = document.getElementById('heatmap-container');
+            grid.innerHTML = ''; heatmapWrapper.innerHTML = '';
+
+            // 渲染矩阵图
+            for (let col = 0; col < 3; col++) {
+                const colEl = document.createElement('div');
+                colEl.className = 'heatmap-container';
+                for (let i = 0; i < 12; i++) {
+                    const idx = col * 12 + i;
+                    const c = plannerData[idx];
+                    const row = document.createElement('div');
+                    row.className = 'cycle-row';
+                    row.innerHTML = `<span class="w-[45px] text-[8px] font-bold text-slate-300">P.${idx+1}</span>`;
+                    for (let d = 0; d < 10; d++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'heatmap-cell';
+                        const intensity = c.tasks.filter(t => t.days[d]).length / Math.max(1, c.tasks.length);
+                        if(c.tasks.some(t => t.days[d])) {
+                            cell.style.backgroundColor = intensity < 0.4 ? '#d8f3dc' : intensity < 0.8 ? '#52b788' : '#1b4332';
+                        }
+                        cell.onclick = () => {
+                            switchTab('journal');
+                            setTimeout(() => {
+                                const target = document.getElementById(`journal-p-${idx+1}`);
+                                if(target) target.scrollIntoView({behavior:'smooth'});
+                            }, 100);
+                        };
+                        row.appendChild(cell);
+                    }
+                    colEl.appendChild(row);
+                }
+                heatmapWrapper.appendChild(colEl);
+            }
+
+            // 渲染任务卡片
+            plannerData.forEach((c, cIdx) => {
+                const card = document.createElement('div');
+                card.className = 'cycle-card p-8 flex flex-col gap-6';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-1">Phase ${c.id}</p>
+                            <input class="input-minimal text-2xl font-black text-slate-800 motto-font" 
+                                   placeholder="设置阶段目标" value="${c.title}" 
+                                   onchange="updateField(${cIdx}, 'title', this.value)">
+                        </div>
+                        <button onclick="addTask(${cIdx})" class="text-slate-200 text-3xl font-light">＋</button>
+                    </div>
+                    <div class="space-y-6">
+                        ${c.tasks.map((t, tIdx) => `
+                            <div class="space-y-3">
+                                <input class="input-minimal text-xs font-bold text-slate-500 italic" 
+                                       placeholder="✎ 待办事项..." value="${t.name}" 
+                                       onchange="updateTaskName(${cIdx}, ${tIdx}, this.value)">
+                                <div class="flex justify-between">
+                                    ${t.days.map((val, dIdx) => `
+                                        <div onclick="toggleDay(${cIdx}, ${tIdx}, ${dIdx})" class="task-dot ${val ? 'active' : ''}"></div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderJournal() {
+            const container = document.getElementById('journal-container');
+            container.innerHTML = '';
+            plannerData.forEach((c, cIdx) => {
+                const entry = document.createElement('div');
+                entry.id = `journal-p-${c.id}`;
+                entry.className = 'notebook-page rounded-[40px] p-8 md:p-16 grid grid-cols-1 lg:grid-cols-12 gap-8';
+                
+                const completed = c.tasks.reduce((acc, t) => acc + t.days.filter(d => d).length, 0);
+                const total = c.tasks.length * 10;
+                const progress = total === 0 ? 0 : Math.round((completed/total)*100);
+
+                entry.innerHTML = `
+                    <div class="lg:col-span-4 space-y-8 border-r border-slate-100 pr-6">
+                        <div class="space-y-2">
+                            <span class="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Phase ${c.id}</span>
+                            <h3 class="text-3xl font-black motto-font text-slate-900">${c.title || '拾光记录中'}</h3>
+                        </div>
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400">
+                            <span>完成度</span><span>${progress}%</span>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-8 space-y-10">
+                        <section>
+                            <h4 class="handwriting text-2xl text-slate-600">✦ 事项足迹</h4>
+                            <textarea class="journal-entry input-minimal w-full min-h-[80px] handwriting text-xl" 
+                                      onchange="updateNote(${cIdx}, 'achievements', this.value)">${c.notes.achievements}</textarea>
+                        </section>
+                        <section>
+                            <h4 class="handwriting text-2xl text-slate-600">✦ 深度感悟</h4>
+                            <textarea class="journal-entry input-minimal w-full min-h-[80px] handwriting text-xl" 
+                                      onchange="updateNote(${cIdx}, 'reflection', this.value)">${c.notes.reflection}</textarea>
+                        </section>
+                        <section>
+                            <h4 class="handwriting text-2xl text-slate-600">✦ 感恩微光</h4>
+                            <textarea class="journal-entry input-minimal w-full min-h-[80px] handwriting text-xl" 
+                                      onchange="updateNote(${cIdx}, 'gratitude', this.value)">${c.notes.gratitude}</textarea>
+                        </section>
+                    </div>
+                `;
+                container.appendChild(entry);
+            });
+        }
+
+        function updateStats() {
+            let possible = 0, done = 0, active = 0;
+            plannerData.forEach(c => {
+                if(c.title.trim()) active++;
+                c.tasks.forEach(t => { 
+                    if(t.name.trim()) { 
+                        possible += 10; 
+                        done += t.days.filter(d => d).length; 
+                    }
+                });
+            });
+            const percent = possible === 0 ? 0 : Math.round((done / possible) * 100);
+            document.getElementById('total-progress-text').innerText = percent + '%';
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('active-count-num').innerText = active;
+        }
+
+        // --- 交互接口 ---
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active', 'text-slate-900'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById(`nav-${tab}`).classList.add('active', 'text-slate-900');
+            if(tab === 'journal') renderJournal();
+            else renderOverview();
+        };
+
+        window.updateField = (idx, f, v) => { plannerData[idx][f] = v; saveData(); };
+        window.updateTaskName = (cIdx, tIdx, v) => { plannerData[cIdx].tasks[tIdx].name = v; saveData(); };
+        window.updateNote = (cIdx, f, v) => { plannerData[cIdx].notes[f] = v; saveData(); };
+        window.toggleDay = (cIdx, tIdx, dIdx) => { 
+            plannerData[cIdx].tasks[tIdx].days[dIdx] = !plannerData[cIdx].tasks[tIdx].days[dIdx]; 
+            renderOverview(); saveData(); 
+        };
+        window.addTask = (idx) => { 
+            if(plannerData[idx].tasks.length < 5) {
+                plannerData[idx].tasks.push({ name: '', days: Array(10).fill(false) }); 
+                renderOverview(); saveData(); 
+            }
+        };
+        window.clearAllData = () => {
+            if(confirm('确定要清除所有本地记录吗？此操作无法恢复。')) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        };
+
+        // 页面启动
+        window.onload = () => {
+            renderOverview();
+            updateStats();
+        };
+    </script>
+</body>
+</html>
