@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我的 36 × 10 天全能计划本</title>
-    <!-- Web App Manifest for PWA - 这能让它在手机上像App一样运行 -->
-    <link rel="manifest" href="data:application/manifest+json,{'name':'10天计划','short_name':'10天计划','start_url':'.','display':'standalone','background_color':'#f4f1ee','theme_color':'#2d6a4f'}">
+    
+    <!-- APP 图标设置 -->
+    <!-- 如果你想用自己的图片，请将下方 href 里的链接换成你的图片网址 -->
+    <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png">
+    
+    <!-- Web App Manifest for PWA -->
+    <link rel="manifest" href="data:application/manifest+json,{'name':'10天计划','short_name':'10天计划','start_url':'.','display':'standalone','background_color':'#f4f1ee','theme_color':'#2d6a4f','icons':[{'src':'https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png','sizes':'512x512','type':'image/png'}]}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="10天计划">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
