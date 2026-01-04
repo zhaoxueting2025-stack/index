@@ -2,20 +2,21 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>我的 36 × 10 天全能计划本</title>
     
-    <!-- APP 图标设置 - 增加了版本号以强制刷新缓存 -->
-    <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png?v=2">
-    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png?v=2">
+    <!-- PWA 图标设置 -->
+    <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png?v=3">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png?v=3">
     
-    <!-- Web App Manifest for PWA -->
-    <link rel="manifest" href="data:application/manifest+json,{'name':'10天计划','short_name':'10天计划','start_url':'.','display':'standalone','background_color':'#f4f1ee','theme_color':'#2d6a4f','icons':[{'src':'https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png?v=2','sizes':'512x512','type':'image/png'}]}">
+    <!-- Web App Manifest - 让网页可被系统识别为 App -->
+    <link rel="manifest" href="data:application/manifest+json,{'name':'10天计划','short_name':'10天计划','start_url':'./index.html','display':'standalone','background_color':'#f4f1ee','theme_color':'#2d6a4f','description':'36个十天自我管理计划','icons':[{'src':'https://img.icons8.com/ios-filled/512/2d6a4f/journal--v1.png?v=3','sizes':'512x512','type':'image/png','purpose':'any maskable'}]}">
     
-    <!-- iOS 专属强制优化 -->
+    <!-- iOS 专用全屏及图标设置 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="10天计划">
+    <meta name="format-detection" content="telephone=no">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -37,6 +38,9 @@
             min-height: 100vh;
             scroll-behavior: smooth;
             -webkit-tap-highlight-color: transparent;
+            /* 适配刘海屏 */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .notebook-page {
@@ -135,7 +139,7 @@
 
         #save-status {
             position: fixed;
-            top: 20px;
+            top: calc(20px + env(safe-area-inset-top));
             right: 20px;
             padding: 6px 12px;
             background: rgba(45, 106, 79, 0.9);
@@ -246,7 +250,6 @@
             const heatmapWrapper = document.getElementById('heatmap-container');
             grid.innerHTML = ''; heatmapWrapper.innerHTML = '';
 
-            // 渲染矩阵图
             for (let col = 0; col < 3; col++) {
                 const colEl = document.createElement('div');
                 colEl.className = 'heatmap-container';
@@ -277,7 +280,6 @@
                 heatmapWrapper.appendChild(colEl);
             }
 
-            // 渲染任务卡片
             plannerData.forEach((c, cIdx) => {
                 const card = document.createElement('div');
                 card.className = 'cycle-card p-8 flex flex-col gap-6';
@@ -371,7 +373,6 @@
             document.getElementById('active-count-num').innerText = active;
         }
 
-        // --- 交互接口 ---
         window.switchTab = (tab) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active', 'text-slate-900'));
@@ -401,7 +402,6 @@
             }
         };
 
-        // 页面启动
         window.onload = () => {
             renderOverview();
             updateStats();
